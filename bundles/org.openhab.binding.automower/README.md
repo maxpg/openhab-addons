@@ -55,12 +55,12 @@ The following actions are available for `automower`things:
 
 | action name  | arguments   | description                  |
 |----------|--------|------------------------------|
-| start  | duration (int) | Starts the automower for the given duration (minutes), overriding the schedule  |
-| pause  | - | Pauses the automower wherever it is currently located  |
-| parkUntilNextSchedule  | - | Parks the automower, fully charges it and starts afterwards according to the schedule  |
-| parkUntilFurtherNotice  | - | Parks the automower until it is started again by the start action or the schedule gets resumed  |
-| park | duration (int) | Parks the automower for the given duration (minutes), overriding the schedule  |
-| resumeSchedule  | - | Resumes the schedule for the automower  |
+| Start  | duration (int) | Starts the automower for the given duration (minutes), overriding the schedule  |
+| Pause  | - | Pauses the automower wherever it is currently located  |
+| ParkUntilNextSchedule  | - | Parks the automower, fully charges it and starts afterwards according to the schedule  |
+| ParkUntilFurtherNotice  | - | Parks the automower until it is started again by the start action or the schedule gets resumed  |
+| Park | duration (int) | Parks the automower for the given duration (minutes), overriding the schedule  |
+| PesumeSchedule  | - | Resumes the schedule for the automower  |
 
 
 ## Full Example
@@ -120,4 +120,29 @@ then
     val mowerActions = getActions("automower", "automower:automower:mybridge:myAutomower")
     mowerActions.parkUntilFurtherNotice()
 end
+```
+```
+rule "Check Regen wegen Guenter"
+when
+Item Regen_Aussen_Dach_an_seit changed
+then 
+if (Regen_Aussen_Dach_an_seit.state > 15 && Automower_Mode.state == "MAIN_AREA"){
+
+    sendNotification("mail@domain.com",	"Guenter mus heim, es regnet schon lange: " + Regen_Aussen_Dach_an_seit.state)
+    sendCommand(Automower_Command,"ParkUntilFurtherNotice")
+}
+end 
+```
+```
+rule "Check Regen aus wegen Guenter"
+when
+Item Regen_Aussen_Dach_aus_seit changed
+then 
+if (Regen_Aussen_Dach_aus_seit.state > 60 && Automower_Activity.state == "PARKED_IN_CS" && Automower_Mode.state == "HOME"){
+
+    sendNotification("mail@domain.com",	"Guenter kann raus, regnet nicht mehr seit: " + Regen_Aussen_Dach_aus_seit.state)
+    sendCommand(Automower_Command,"ResumeSchedule")
+
+}
+end 
 ```
